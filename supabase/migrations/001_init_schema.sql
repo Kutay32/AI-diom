@@ -1,0 +1,31 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS idioms (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  text TEXT NOT NULL UNIQUE,
+  emojis JSONB NOT NULL,
+  base_weight INTEGER DEFAULT 100
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id VARCHAR(6) PRIMARY KEY,
+  host_id UUID NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'LOBBY' CHECK (status IN ('LOBBY', 'ROLE_ASSIGNMENT', 'EMOJI_PICKING', 'GUESSING', 'ROUND_END', 'GAME_OVER')),
+  current_round INTEGER NOT NULL DEFAULT 0,
+  active_turn_index INTEGER NOT NULL DEFAULT 0,
+  current_idiom_id UUID REFERENCES idioms(id) NULL,
+  round_ends_at TIMESTAMPTZ NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS players (
+  id UUID PRIMARY KEY,
+  room_id VARCHAR(6) REFERENCES rooms(id) ON DELETE CASCADE,
+  username VARCHAR(20) NOT NULL,
+  score INTEGER NOT NULL DEFAULT 0,
+  is_host BOOLEAN NOT NULL DEFAULT FALSE,
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_players_room_id ON players(room_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms(status);

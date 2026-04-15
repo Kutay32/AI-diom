@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EMOJIDEYIM
 
-## Getting Started
+Realtime multiplayer emoji idiom guessing game.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router + TypeScript
+- Tailwind CSS + lightweight Radix wrappers
+- Zustand (client state)
+- Framer Motion (interaction animation)
+- Supabase (PostgreSQL + Auth + Realtime)
+- fastest-levenshtein (guess matching)
+
+## Quick Start
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Create environment file
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill .env.local
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. Run dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database Setup (Supabase SQL Editor)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run migration files in order:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. supabase/migrations/001_init_schema.sql
+2. supabase/migrations/002_rpc_increment_score.sql
+3. supabase/migrations/003_rls_policies.sql
 
-## Learn More
+## Current Implementation Scope
 
-To learn more about Next.js, take a look at the following resources:
+- Landing page with room join/create UX
+- Room route with server bootstrap
+- Client runtime skeleton for LOBBY, ROLE_ASSIGNMENT/EMOJI_PICKING and GUESSING
+- Realtime broadcast handlers (STATE_SYNC, QUESTION_SELECTED, GUESS_ATTEMPT)
+- RPC-based score increment call (increment_score)
+- Wrong-guess anti-spam set and fuzzy matching
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Seed Idioms (0$ Rule-Based)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Install python deps:
 
-## Deploy on Vercel
+```bash
+pip install -r scripts/requirements.txt
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Run seed script:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+python scripts/seed_idioms.py --input ./idioms.jsonl --batch-size 50 --concurrency 10
+```
+
+Input format (JSONL):
+
+```json
+{"text": "etekleri tutusmak", "meaning": "ani panik yasamak"}
+```
+
+## Validation
+
+```bash
+npm run typecheck
+npm run lint
+```
